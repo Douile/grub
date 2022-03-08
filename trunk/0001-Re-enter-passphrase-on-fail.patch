@@ -1,0 +1,85 @@
+From 1c34624b5f8e15aa74cf8529f840182241456188 Mon Sep 17 00:00:00 2001
+From: Douile <25043847+Douile@users.noreply.github.com>
+Date: Sun, 6 Mar 2022 23:02:21 +0000
+Subject: [PATCH 1/2] Re-enter passphrase on fail
+
+---
+ grub-core/disk/luks.c  | 10 ++++++++--
+ grub-core/disk/luks2.c | 13 +++++++++----
+ 2 files changed, 17 insertions(+), 6 deletions(-)
+
+diff --git a/grub-core/disk/luks.c b/grub-core/disk/luks.c
+index 13103ea6a..ae55a2e8c 100644
+--- a/grub-core/disk/luks.c
++++ b/grub-core/disk/luks.c
+@@ -186,6 +186,7 @@ luks_recover_key (grub_disk_t source,
+   /* Get the passphrase from the user.  */
+   tmp = NULL;
+   if (source->partition)
++    enter_passphrase:
+     tmp = grub_partition_get_name (source->partition);
+   grub_printf_ (N_("Enter passphrase for %s%s%s (%s): "), source->name,
+ 	       source->partition ? "," : "", tmp ? : "",
+@@ -193,8 +194,10 @@ luks_recover_key (grub_disk_t source,
+   grub_free (tmp);
+   if (!grub_password_get (passphrase, MAX_PASSPHRASE))
+     {
+-      grub_free (split_key);
+-      return grub_error (GRUB_ERR_BAD_ARGUMENT, "Passphrase not supplied");
++      grub_printf_ ("You must supply a passphrase\n");
++      goto enter_passphrase;
++      // grub_free (split_key);
++      // return grub_error (GRUB_ERR_BAD_ARGUMENT, "Passphrase not supplied");
+     }
+ 
+   /* Try to recover master key from each active keyslot.  */
+@@ -307,6 +310,9 @@ luks_recover_key (grub_disk_t source,
+       return GRUB_ERR_NONE;
+     }
+ 
++  grub_printf_ ("Invalid passphrase\n");
++  goto enter_passphrase;
++
+   grub_free (split_key);
+   return GRUB_ACCESS_DENIED;
+ }
+diff --git a/grub-core/disk/luks2.c b/grub-core/disk/luks2.c
+index 371a53b83..154ba465d 100644
+--- a/grub-core/disk/luks2.c
++++ b/grub-core/disk/luks2.c
+@@ -583,14 +583,17 @@ luks2_recover_key (grub_disk_t source,
+ 
+   /* Get the passphrase from the user. */
+   if (source->partition)
++  enter_passphrase:
+     part = grub_partition_get_name (source->partition);
+   grub_printf_ (N_("Enter passphrase for %s%s%s (%s): "), source->name,
+ 		source->partition ? "," : "", part ? : "",
+ 		crypt->uuid);
+   if (!grub_password_get (passphrase, MAX_PASSPHRASE))
+     {
+-      ret = grub_error (GRUB_ERR_BAD_ARGUMENT, "Passphrase not supplied");
+-      goto err;
++      grub_printf_ ("You must supply a passphrase\n");
++      goto enter_passphrase;
++      // ret = grub_error (GRUB_ERR_BAD_ARGUMENT, "Passphrase not supplied");
++      // goto err;
+     }
+ 
+   if (grub_json_getvalue (&keyslots, json, "keyslots") ||
+@@ -745,8 +748,10 @@ luks2_recover_key (grub_disk_t source,
+     }
+   if (candidate_key_len == 0)
+     {
+-      ret = grub_error (GRUB_ERR_ACCESS_DENIED, "Invalid passphrase");
+-      goto err;
++      grub_printf_ ("Invalid passphrase\n");
++      goto enter_passphrase;
++      // ret = grub_error (GRUB_ERR_ACCESS_DENIED, "Invalid passphrase");
++      // goto err;
+     }
+ 
+   /* Set up disk cipher. */
+-- 
+2.35.1
+
