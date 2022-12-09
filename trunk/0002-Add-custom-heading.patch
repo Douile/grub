@@ -1,4 +1,4 @@
-From 3a4dde2297e93beb1af4641516361317cce092fd Mon Sep 17 00:00:00 2001
+From 0554d89174db7f512d287aa095f11033bc75262d Mon Sep 17 00:00:00 2001
 From: Douile <25043847+Douile@users.noreply.github.com>
 Date: Sun, 6 Mar 2022 23:04:14 +0000
 Subject: [PATCH 2/2] Add custom heading
@@ -8,20 +8,20 @@ Subject: [PATCH 2/2] Add custom heading
  1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/grub-core/kern/main.c b/grub-core/kern/main.c
-index 73967e2f5..c69f92f63 100644
+index 731c07c29..fdd09ac97 100644
 --- a/grub-core/kern/main.c
 +++ b/grub-core/kern/main.c
-@@ -272,8 +272,9 @@ grub_main (void)
- 
+@@ -274,8 +274,9 @@ grub_main (void)
+ #ifndef GRUB_MACHINE_EFI
    /* Hello.  */
    grub_setcolorstate (GRUB_TERM_COLOR_HIGHLIGHT);
 -  grub_printf ("Welcome to GRUB!\n\n");
 +  grub_printf ("Welcome to GRUB (Tom edition)!\n\n");
    grub_setcolorstate (GRUB_TERM_COLOR_STANDARD);
 +  grub_printf ("You better not be here to hek me\n\n");
+ #endif
  
    /* Init verifiers API. */
-   grub_verifiers_init ();
 -- 
-2.35.1
+2.38.1
 
